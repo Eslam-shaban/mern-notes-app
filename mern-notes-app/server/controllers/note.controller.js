@@ -20,6 +20,8 @@ export const getNotes = async (req, res) => {
 // Get a single note by ID
 export const getNote = async (req, res) => {
   const { id } = req.params;
+  const userId = req.userId;
+
 
   // Validate MongoDB ObjectID
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -30,12 +32,13 @@ export const getNote = async (req, res) => {
   }
 
   try {
-    const note = await Notes.findById(id);
+    //const note = await Notes.findById(id);
+    const note = await Notes.findOne({ _id: id, userId });
 
     if (!note) {
       return res.status(404).json({
         success: false,
-        error: 'No note found'
+        error: 'No note found or you do not have access'
       });
     }
 
@@ -74,6 +77,7 @@ export const createNote = async (req, res) => {
 // Update a note by ID
 export const updateNote = async (req, res) => {
   const { id } = req.params;
+  const userId = req.userId;
 
   // Validate MongoDB ObjectID
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -84,11 +88,13 @@ export const updateNote = async (req, res) => {
   }
 
   try {
-    let note = await Notes.findById(id);
+    // let note = await Notes.findById(id);
+    let note = await Notes.findOne({ _id: id, userId });
+
     if (!note) {
       return res.status(404).json({
         success: false,
-        error: 'No note found'
+        error: 'No note found or you do not have access'
       });
     }
 
@@ -112,6 +118,8 @@ export const updateNote = async (req, res) => {
 // Delete a note by ID
 export const deleteNote = async (req, res) => {
   const { id } = req.params;
+  const userId = req.userId;
+
 
   // Validate MongoDB ObjectID
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -122,11 +130,13 @@ export const deleteNote = async (req, res) => {
   }
 
   try {
-    const note = await Notes.findByIdAndDelete(id);
+    // const note = await Notes.findByIdAndDelete(id);
+    const note = await Notes.findOneAndDelete({ _id: id, userId });
+
     if (!note) {
       return res.status(404).json({
         success: false,
-        error: 'No note found'
+        error: 'No note found or you do not have access'
       });
     }
 

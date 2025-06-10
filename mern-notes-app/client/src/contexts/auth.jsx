@@ -1,8 +1,10 @@
 import { createContext, useContext, useState, useEffect } from "react";
+
 import { toast } from 'react-toastify'
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+
 
     const [user, setUser] = useState(localStorage.getItem('token') || null);
 
@@ -24,7 +26,7 @@ export const AuthProvider = ({ children }) => {
             }
         )
         const data = await res.json();
-        console.log(data)
+        // console.log(data)
 
         if (data.success) {
             setUser(data.token);
@@ -45,7 +47,7 @@ export const AuthProvider = ({ children }) => {
             }
         )
         const data = await res.json();
-        console.log(data)
+        // console.log(data)
 
         if (data.success) {
             setUser(data.token);
@@ -60,6 +62,7 @@ export const AuthProvider = ({ children }) => {
     const logoutUser = async () => {
 
         localStorage.removeItem('token');
+        setUser(null);
         toast.success("User logged out successfully")
     }
 

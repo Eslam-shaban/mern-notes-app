@@ -40,7 +40,7 @@ const CreateNote = () => {
     }
 
     return (
-        <div className="flex flex-col gap-4 p-4 min-h-screen justify-center items-center">
+        <div className="flex flex-col gap-4 p-4 min-h-screen justify-center items-center  bg-sky-900">
 
             <form
                 onSubmit={handleSubmit}
@@ -49,10 +49,11 @@ const CreateNote = () => {
                 <input type="text" name="title" placeholder="title" value={title} onChange={(e) => { setTitle(e.target.value) }} className="bg-gray-100 px-4 py-2 rounded-md" />
                 <input type="text" name="description" placeholder="description" value={description} onChange={(e) => { setDescription(e.target.value) }} className="bg-gray-100 px-4 py-2 rounded-md" />
                 <select name="color" value={color} onChange={(e) => { setColor(e.target.value) }} className="bg-gray-100 px-4 py-2 rounded-md">
-                    <option value="#ffffff">White</option>
-                    <option value="#ff0000">Red</option>
-                    <option value="#00ff00">Green</option>
-                    <option value="#0000ff">Blue</option>
+                    <option value="#efefef">White</option>
+                    <option value="#f44336">Red</option>
+                    <option value="#099660">Green</option>
+                    <option value="#2196F3">Blue</option>
+                    <option value="#FFC107">Yellow</option>
                 </select>
                 <button
                     type="submit"

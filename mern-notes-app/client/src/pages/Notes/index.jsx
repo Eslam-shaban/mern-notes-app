@@ -3,6 +3,12 @@ import { useAuth } from "../../contexts/auth";
 import { Link } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader"; // Example spinner from react-spinners
 import { toast } from "react-toastify";
+import { MdDelete } from "react-icons/md";
+import { CiEdit } from "react-icons/ci";
+import { formatDistanceToNow } from 'date-fns';
+import { AiFillPlusCircle } from "react-icons/ai";
+
+
 
 
 const Notes = () => {
@@ -38,7 +44,7 @@ const Notes = () => {
                 }
             });
             const data = await res.json();
-            console.log(data);
+            // console.log(data);
             if (data.success) {
                 setNotes(data.data);
             }
@@ -62,34 +68,42 @@ const Notes = () => {
         );
     }
     return (
-        <div className="container py-8 flex flex-col gap-4">
-            <button >
-                <Link to="/notes/create"
-                    className="bg-blue-500 text-white px-4 py-2 ml-2 block rounded-md"
-                > Create Note</Link></button>
+        <div className=" py-8 flex flex-col gap-4 bg-sky-900 w-full h-screen">
+            <Link to="/notes/create"
+                className="ml-4"
+            >
+
+                <AiFillPlusCircle size={40} className="text-black hover:text-blue-500" />
+            </Link>
             {notes.length === 0 && (
-                <h1 className="text-2xl  font-bold">No notes found</h1>
+                <h1 className="text-2xl pl-3 font-bold">No notes found</h1>
             )}
-            <div className=" flex flex-wrap gap-4 p-4">
+            <div className=" grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
 
                 {notes.map((note) => (
                     <div
                         key={note._id}
-                        className="flex flex-col gap-4 p-4  items-center justify-center w-64 h-32 rounded-md"
+                        className="flex flex-col gap-4 p-3 rounded-md shadow-sm shadow-gray-400"
                         style={{ backgroundColor: note.color }}>
-                        <h1 className="text-2xl font-bold text-white" >{note.title}</h1>
-                        <p className="text-2xl text-gray-200">{note.description}</p>
-                        <button>
-                            <Link to={`/notes/update/${note._id}`}
-                                className="bg-blue-500 text-white px-4 py-2 rounded-md">
-                                Update Note
-                            </Link>
-                        </button>
-                        <button
-                            className="bg-red-500 text-white px-4 py-2 rounded-md"
-                            onClick={() => handleDeleteNote(note._id)}>
-                            Delete Note
-                        </button>
+                        <h1 className="text-2xl font-bold text-black" >{note.title}</h1>
+                        <p className="text-black text-base">{note.description}</p>
+
+                        <div className="flex justify-between">
+                            <p className="text-sm text-gray-800 text-base">
+                                {`Created: ${formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}`}
+                            </p>
+
+                            <div className="flex justify-between">
+                                <Link to={`/notes/update/${note._id}`}>
+                                    <CiEdit className="hover:cursor-pointer ml-1 hover:text-blue-800" size={20}>
+                                    </CiEdit>
+                                </Link>
+
+                                <MdDelete onClick={() => handleDeleteNote(note._id)}
+                                    className="hover:cursor-pointer ml-1 hover:text-red-500" size={20} />
+
+                            </div>
+                        </div>
                     </div>
                 ))}
             </div>

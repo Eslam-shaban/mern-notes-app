@@ -21,6 +21,7 @@ export const requireAuth = (req, res, next) => {
         }
 
         const { id } = payload;
+        console.log(payload)
         req.userId = id;
         next();
     });

@@ -23,6 +23,7 @@ const Login = () => {
                     ref={LoginRef}
                     className="flex flex-col gap-4"
                     onSubmit={handleSubmit}>
+
                     <input type="email" placeholder="Email" name="email"
                         className="p-2 border-2 rounded outline-none focus:border-blue-400 focus:shadow" />
                     <input type="password" placeholder="Password" name="password"

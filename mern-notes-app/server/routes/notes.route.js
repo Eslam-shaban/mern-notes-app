@@ -10,6 +10,7 @@ import { requireAuth } from "../middleware/requireAuth.js";
 
 const router = express.Router();
 
+// authentication
 router.use(requireAuth)
 
 router.route("/").get(getNotes).post(createNote);
