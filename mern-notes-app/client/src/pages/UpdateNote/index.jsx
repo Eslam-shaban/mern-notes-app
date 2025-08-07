@@ -36,7 +36,7 @@ const UpdateNote = () => {
     // 2️⃣ Populate the form when data is loaded
     useEffect(() => {
         if (note) {
-            // console.log(note)
+            console.log(note)
             setColor(note.color);
             setDescription(note.description);
             setTitle(note.title);
