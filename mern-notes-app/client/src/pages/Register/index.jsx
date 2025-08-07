@@ -1,20 +1,27 @@
 import { useRef } from "react";
 import { useAuth } from '../../contexts/auth'
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
 
     const registerRef = useRef(null);
     const { registerUser } = useAuth();
+    const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const formData = new FormData(registerRef.current);
-        // console.log(formData)
-        const data = Object.fromEntries(formData)
-        // console.log(data)
-        registerUser(data);
-
+        try {
+            const formData = new FormData(registerRef.current);
+            const data = Object.fromEntries(formData);
+            await registerUser(data);
+            toast.success("User Register successfully");
+            navigate("/");
+        } catch (error) {
+            toast.error(error.message || "Register failed");
+        }
     }
+
     return (
         <>
 
@@ -25,9 +32,9 @@ const Register = () => {
                     className="flex flex-col gap-4"
                     onSubmit={handleSubmit}>
 
-                    <input type="email" placeholder="Email" name="email"
+                    <input required type="email" placeholder="Email" name="email"
                         className="p-2 border-2 rounded outline-none focus:border-blue-400 focus:shadow" />
-                    <input type="password" placeholder="Password" name="password"
+                    <input required type="password" placeholder="Password" name="password"
                         className="p-2 border-2 rounded outline-none focus:border-blue-400 focus:shadow" />
                     <button type="submit" className="w-full p-2 bg-blue-500 hover:bg-blue-400 text-white rounded shadow">Register</button>
                 </form>
