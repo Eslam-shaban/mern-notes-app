@@ -14,58 +14,62 @@ export const AuthProvider = ({ children }) => {
         if (token) {
             setUser(token)
         }
-
     }, []);
 
+    // Function to handle user registration
     const registerUser = async (userData) => {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/users/register`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData)
-            }
-        )
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || "Register failed");
+        }
+
         const data = await res.json();
-        // console.log(data)
 
         if (data.success) {
             setUser(data.token);
-            // save to local storage
             localStorage.setItem('token', data.token);
-            toast.success("User registered successfully")
         }
-        if (!data.success) {
-            toast.error(data.error)
-        }
-    }
+
+        return data;
+    };
+
+    // Function to handle user login
     const loginUser = async (userData) => {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/users/login`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData)
-            }
-        )
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData),
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || "Login failed");
+        }
+
         const data = await res.json();
-        // console.log(data)
 
         if (data.success) {
             setUser(data.token);
-            // save to local storage
             localStorage.setItem('token', data.token);
-            toast.success("User logged in successfully")
         }
-        if (!data.success) {
-            toast.error(data.error)
-        }
-    }
-    const logoutUser = async () => {
 
+        return data;
+    };
+
+
+    // Function to handle user logout
+    const logoutUser = async () => {
         localStorage.removeItem('token');
         setUser(null);
         toast.success("User logged out successfully")
     }
-
+    // Context data to be provided to components
     const contextData = {
         user,
         loginUser,

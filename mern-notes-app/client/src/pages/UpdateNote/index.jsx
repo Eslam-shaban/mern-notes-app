@@ -4,80 +4,93 @@ import { useAuth } from "../../contexts/auth"
 import { toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader"; // Example spinner from react-spinners
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import API from '../../api/API';
 
 const UpdateNote = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { id } = useParams();
-    const [loading, setLoading] = useState(true); // State to manage loading
+    // const [isLoading, setLoading] = useState(true); // State to manage loading
 
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
     const [color, setColor] = useState("#ffffff")
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const note = {
-            title,
-            description,
-            color
-        }
+    const queryClient = useQueryClient();
 
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/notes/${id}`,
-            {
-                method: 'PUT',
+    // 1️⃣ Fetch single note by ID
+    const { data, isLoading, isError, error } = useQuery({
+        queryKey: ['notes', id],
+        queryFn: async () => {
+            const res = await API.get(`/notes/${id}`, {
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user}` // Corrected header name
-                },
-                body: JSON.stringify(note)
-            }
-        )
-        const data = await res.json();
-        // console.log(data)
-        if (data.success) {
+                    'Authorization': `Bearer ${user}`
+                }
+            });
+            return res.data;
+        },
+        enabled: !!user, // prevent query from running before auth is ready
+    })
+    const note = data?.data;
+    // 2️⃣ Populate the form when data is loaded
+    useEffect(() => {
+        if (note) {
+            // console.log(note)
+            setColor(note.color);
+            setDescription(note.description);
+            setTitle(note.title);
+        }
+    }, [note])
+
+    // 3️⃣ Mutation to update note
+    const updateNoteMutation = useMutation({
+        mutationFn: (note) =>
+            API.put(`/notes/${id}`, note, {
+                headers: {
+                    'Authorization': `Bearer ${user}`,
+                }
+            }),
+        onSuccess: () => {
             setTitle("")
             setDescription("")
             setColor("#ffffff")
-            toast.success("Note Updated")
-            navigate("/notes")
+            toast.success("Note Updated");
+            queryClient.invalidateQueries(['notes']);
+            navigate("/");
+        },
+        onError: (error) => {
+            toast.error(error.response?.data?.message || 'Failed to update note');
         }
-    }
-    const getNote = async () => {
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/notes/${id}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user}` // Corrected header name
-                }
-            });
-            const data = await res.json();
-            console.log(data);
-            if (data.success) {
-                setTitle(data.data.title);
-                setDescription(data.data.description);
-                setColor(data.data.color);
-            }
-        } catch (error) {
-            console.error("Error fetching notes:", error);
-        } finally {
-            setLoading(false); // Set loading to false after the fetch is complete
-        }
-    }
-    useEffect(() => {
-        getNote();
-    }, [])
 
-
-    if (loading) {
+    })
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const note = { title, description, color }
+        updateNoteMutation.mutate(note);
+    }
+    // 4️⃣ UI feedback
+    if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <ClipLoader size={50} color={"#123abc"} loading={loading} />
+                <ClipLoader size={50} color={"#123abc"} loading={isLoading} />
             </div>
         );
     }
+    if (isError) {
+        console.error("Fetching notes failed:", error);
+        toast.error(error?.message || "Failed to load notes");
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <p className="text-red-500 text-lg font-semibold">
+                    {error.message || 'Something went wrong while fetching notes.'}
+                </p>
+            </div>
+        );
+    }
+    if (!data) return null;
 
+    // 5️⃣ Form UI
     return (
         <div className="flex flex-col gap-4 p-4 min-h-screen justify-center items-center  bg-sky-900">
 
@@ -96,8 +109,10 @@ const UpdateNote = () => {
                 </select>
                 <button
                     type="submit"
-                    className="bg-blue-500 text-white px-4 py-2 rounded-md">
-                    Update Note
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                    disabled={updateNoteMutation.isPending}
+                >
+                    {updateNoteMutation.isPending ? "Updating..." : "Update Note"}
                 </button>
             </form>
         </div>

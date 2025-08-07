@@ -27,7 +27,7 @@ app.use("/api/v1/users", usersRouter);
 const startServer = async () => {
   try {
     await connectDB(); // Connect to the database
-    app.listen(3000, () => {
+    app.listen(process.env.PORT || 5000, () => {
       console.log("App listening on port 3000");
     });
   } catch (error) {

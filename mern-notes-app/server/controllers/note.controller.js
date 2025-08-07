@@ -97,8 +97,15 @@ export const updateNote = async (req, res) => {
         error: 'No note found or you do not have access'
       });
     }
-
-    note = await Notes.findByIdAndUpdate(id, req.body, {
+    // Only allow title and content to be updated (example)
+    const allowedUpdates = ['title', 'desceription', 'color'];
+    const updates = {};
+    allowedUpdates.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    });
+    note = await Notes.findByIdAndUpdate(id, updates, {
       new: true,
       runValidators: true
     });

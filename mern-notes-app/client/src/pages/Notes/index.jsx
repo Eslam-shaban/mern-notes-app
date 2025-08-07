@@ -7,63 +7,90 @@ import { MdDelete } from "react-icons/md";
 import { CiEdit } from "react-icons/ci";
 import { formatDistanceToNow } from 'date-fns';
 import { AiFillPlusCircle } from "react-icons/ai";
-
-
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import API from '../../api/API';
 
 
 const Notes = () => {
 
-    const [loading, setLoading] = useState(true); // State to manage loading
-    const [notes, setNotes] = useState([]);
+    const queryClient = useQueryClient();
     const { user } = useAuth();
 
-    const handleDeleteNote = async (id) => {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/notes/${id}`,
-            {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user}` // Corrected header name
-                },
+    const deleteNoteMutation = useMutation({
+        mutationFn: (id) =>
+            API.delete(`/notes/${id}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${user}`
+                    },
+                }),
+        onSuccess: () => {
+            toast.success('Note deleted successfully');
+            queryClient.invalidateQueries(['notes']);
+        },
+        onError: (error) => {
+            console.error("Delete failed:", error);
+            toast.error(error.response?.data?.message || 'Failed to delete note');
+        },
+    });
 
-            }
-        )
-        const data = await res.json();
-        setNotes(notes.filter((note) => note._id !== id))
-        if (data.success) {
-            toast.success("Note deleted successfully")
-        }
-    }
-    const getAllNotes = async () => {
+    // const handleDeleteNote = async (id) => {
+    //     const res = await API.delete(`/notes/${id}`,
+    //         {
+    //             headers: {
+    //                 'Authorization': `Bearer ${user}`
+    //             },
+    //         }
+    //     )
+    //     const data = await res.data;
+    //     // setNotes(notes.filter((note) => note._id !== id))
+    //     if (data.success) {
+    //         toast.success("Note deleted successfully");
+    //         queryclient.invalidateQueries(['notes']); // Invalidate the notes query to refetch data
+    //     }
+    // }
+
+    const notesFetch = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/notes`, {
-                method: 'GET',
+            const res = await API.get("/notes", {
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user}` // Corrected header name
                 }
             });
-            const data = await res.json();
-            // console.log(data);
-            if (data.success) {
-                setNotes(data.data);
-            }
-        } catch (error) {
-            console.error("Error fetching notes:", error);
-        } finally {
-            setLoading(false); // Set loading to false after the fetch is complete
+            // console.log(res)
+            return res.data;
         }
+        catch (err) {
+            console.error("Axios fetch failed:", err.response?.data || err.message);
+            const errorMessage =
+                err.response?.data?.message ||
+                err.response?.statusText ||
+                'Failed to fetch notes';
 
+            throw new Error(errorMessage);
+        }
     }
 
-    useEffect(() => {
-        getAllNotes()
-    }, [])
+    const { data, isLoading, isError, error } = useQuery({
+        queryKey: ['notes'],
+        queryFn: notesFetch,
+    })
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <ClipLoader size={50} color={"#123abc"} loading={loading} />
+                <ClipLoader size={50} color={"#123abc"} loading={isLoading} />
+            </div>
+        );
+    }
+    if (isError) {
+        console.error("Fetching notes failed:", error);
+        toast.error(error?.message || "Failed to load notes");
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <p className="text-red-500 text-lg font-semibold">
+                    {error.message || 'Something went wrong while fetching notes.'}
+                </p>
             </div>
         );
     }
@@ -75,12 +102,12 @@ const Notes = () => {
 
                 <AiFillPlusCircle size={40} className="text-black hover:text-blue-500" />
             </Link>
-            {notes.length === 0 && (
+            {data.data.length === 0 && (
                 <h1 className="text-2xl pl-3 font-bold">No notes found</h1>
             )}
             <div className=" grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
 
-                {notes.map((note) => (
+                {data.data?.map((note) => (
                     <div
                         key={note._id}
                         className="flex flex-col gap-4 p-3 rounded-md shadow-sm shadow-gray-400"
@@ -89,7 +116,7 @@ const Notes = () => {
                         <p className="text-black text-base">{note.description}</p>
 
                         <div className="flex justify-between">
-                            <p className="text-sm text-gray-800 text-base">
+                            <p className="text-sm text-gray-800 ">
                                 {`Created: ${formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}`}
                             </p>
 
@@ -99,7 +126,7 @@ const Notes = () => {
                                     </CiEdit>
                                 </Link>
 
-                                <MdDelete onClick={() => handleDeleteNote(note._id)}
+                                <MdDelete onClick={() => deleteNoteMutation.mutate(note._id)}
                                     className="hover:cursor-pointer ml-1 hover:text-red-500" size={20} />
 
                             </div>
