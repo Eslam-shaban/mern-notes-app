@@ -13,9 +13,9 @@ const UpdateNote = () => {
     const { id } = useParams();
     // const [isLoading, setLoading] = useState(true); // State to manage loading
 
-    const [title, setTitle] = useState("")
-    const [description, setDescription] = useState("")
-    const [color, setColor] = useState("#ffffff")
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [color, setColor] = useState("#ffffff");
 
     const queryClient = useQueryClient();
 
@@ -36,10 +36,10 @@ const UpdateNote = () => {
     // 2️⃣ Populate the form when data is loaded
     useEffect(() => {
         if (note) {
-            console.log(note)
-            setColor(note.color);
-            setDescription(note.description);
+            // console.log(note)
             setTitle(note.title);
+            setDescription(note.description); description
+            setColor(note.color);
         }
     }, [note])
 
@@ -52,9 +52,9 @@ const UpdateNote = () => {
                 }
             }),
         onSuccess: () => {
-            setTitle("")
-            setDescription("")
-            setColor("#ffffff")
+            // setTitle("")
+            // setDescription("")
+            // setColor("#ffffff")
             toast.success("Note Updated");
             queryClient.invalidateQueries(['notes']);
             navigate("/");
@@ -67,6 +67,7 @@ const UpdateNote = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const note = { title, description, color }
+        // console.log(note)
         updateNoteMutation.mutate(note);
     }
     // 4️⃣ UI feedback
@@ -88,7 +89,6 @@ const UpdateNote = () => {
             </div>
         );
     }
-    if (!data) return null;
 
     // 5️⃣ Form UI
     return (

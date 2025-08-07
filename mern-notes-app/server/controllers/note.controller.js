@@ -98,7 +98,7 @@ export const updateNote = async (req, res) => {
       });
     }
     // Only allow title and content to be updated (example)
-    const allowedUpdates = ['title', 'desceription', 'color'];
+    const allowedUpdates = ['title', 'description', 'color'];
     const updates = {};
     allowedUpdates.forEach(field => {
       if (req.body[field] !== undefined) {
